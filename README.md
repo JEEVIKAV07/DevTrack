@@ -1,36 +1,244 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Internal Engineering Productivity Dashboard
 
-## Getting Started
+## Problem statement
 
-First, run the development server:
+Engineering teams often work across multiple disconnected systems for deployments, incidents, environments, and developer activity. That fragmentation slows down status reporting, leads to manual spreadsheets and inconsistent metrics, and makes it difficult to answer operational questions quickly.
+
+## Project objective
+
+This project creates a secure, internal-facing engineering productivity dashboard that consolidates delivery health, ticket workload, environment status, and contributor activity into a single interface. The goal is to provide engineering leaders with a clear operational picture while keeping the architecture ready for future integration with real CI/CD, ticketing, and monitoring platforms.
+
+## Features
+
+- Secure login flow with NextAuth credentials
+- Executive dashboard with KPI cards and operational summaries
+- Deployment and release tracking across environments
+- Ticket backlog and status monitoring
+- Environment health visibility with charts and health badges
+- Engineering activity metrics by contributor and team
+- CSV report export for stakeholder updates
+- Desktop and mobile responsive layout
+- Loading, empty, and retry states for API-backed views
+- Mock API layer designed for easy real-service replacement
+
+## Screenshots
+
+![Dashboard Overview](https://placehold.co/1200x700/eff6ff/1e3a8a?text=Dashboard+Overview)
+
+![Deployment Monitoring](https://placehold.co/1200x700/f8fafc/334155?text=Deployment+Monitoring)
+
+![Ticket Operations](https://placehold.co/1200x700/f8fafc/334155?text=Ticket+Operations)
+
+## Tech stack
+
+- Next.js 16
+- React 19
+- TypeScript
+- Tailwind CSS
+- Recharts
+- Lucide React
+- Prisma
+- PostgreSQL
+- NextAuth
+- ESLint
+
+## System architecture
+
+```text
+Browser / User
+    ↓
+Next.js App Router frontend
+    ↓
+Protected route + auth layer
+    ↓
+API route handlers (dashboard, deployments, tickets, environments, activity, reports)
+    ↓
+Mock data services / future production service adapters
+    ↓
+PostgreSQL + Prisma data layer
+```
+
+## Frontend and backend architecture
+
+### Frontend
+
+- App Router pages under src/app
+- Reusable UI components under src/components
+- Light enterprise design system with white/gray surfaces and blue accents
+- Client-side fetches against internal API routes
+
+### Backend
+
+- Route handlers under src/app/api
+- Authentication with NextAuth in src/lib/auth/auth.ts
+- Service layer abstraction in src/lib/services
+- Database access through Prisma client in src/lib/db
+
+## PostgreSQL + Prisma setup
+
+This project is designed to work with PostgreSQL and Prisma for persistent data storage and future model expansion.
+
+```bash
+npx prisma generate
+npx prisma migrate dev --name init
+npx prisma db seed
+```
+
+The Prisma schema includes models for:
+
+- User
+- Deployment
+- Ticket
+- Environment
+- EngineeringActivity
+
+## Authentication
+
+Authentication is handled with NextAuth using credential-based sign-in. The demo fallback account is configured from environment variables so the app stays easy to run locally without committing secrets.
+
+Example values:
+
+```env
+DEMO_USER_EMAIL="demo@engineering.internal"
+DEMO_USER_PASSWORD="replace-with-a-demo-password"
+```
+
+## API endpoints
+
+The app exposes these route handlers:
+
+- GET /api/dashboard
+- GET /api/deployments
+- GET /api/tickets
+- GET /api/environments
+- GET /api/activity
+- GET /api/reports
+
+Each route validates the session and returns normalized JSON payloads for the client views.
+
+## Mock API explanation
+
+The current project uses mock data services in src/lib/services to simulate engineering telemetry from multiple internal systems. This makes the product feel realistic and allows the frontend to interact with backend routes as it would in a production environment, while remaining easy to swap for real APIs such as Jira, GitHub, GitLab, Datadog, or a CI/CD platform.
+
+## Environment variables
+
+Copy .env.example to .env.local and fill in the values:
+
+```bash
+cp .env.example .env.local
+```
+
+Required variables:
+
+```env
+DATABASE_URL="postgresql://username:password@localhost:5432/engineering_dashboard"
+AUTH_SECRET="replace-with-a-secure-secret"
+NEXTAUTH_URL="http://localhost:3000"
+NODE_ENV="development"
+DEMO_USER_EMAIL="demo@engineering.internal"
+DEMO_USER_PASSWORD="replace-with-a-demo-password"
+NEXT_PUBLIC_DEMO_EMAIL="demo@engineering.internal"
+NEXT_PUBLIC_DEMO_PASSWORD="replace-with-a-demo-password"
+```
+
+## Local setup instructions
+
+1. Clone the repository.
+2. Install dependencies:
+
+```bash
+npm install
+```
+
+3. Configure the local environment file:
+
+```bash
+cp .env.example .env.local
+```
+
+4. Update the placeholder values in .env.local.
+5. Generate Prisma client:
+
+```bash
+npx prisma generate
+```
+
+6. Start the app:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Database migration instructions
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+npx prisma migrate dev --name init
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+If you want to reset and reseed the local database:
 
-## Learn More
+```bash
+npx prisma migrate reset
+npx prisma db seed
+```
 
-To learn more about Next.js, take a look at the following resources:
+## Seed instructions
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+npx prisma db seed
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+The seed script creates demo users and sample engineering data for deployments, tickets, environments, and activity records.
 
-## Deploy on Vercel
+## How to run the project
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```bash
+npm install
+npm run dev
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Open http://localhost:3000 to view the dashboard.
+
+## Build instructions
+
+```bash
+npm run lint
+npm run build
+```
+
+## Deployment instructions
+
+1. Set environment variables in the target hosting environment.
+2. Ensure PostgreSQL is available and reachable.
+3. Run Prisma migration during deployment:
+
+```bash
+npx prisma migrate deploy
+```
+
+4. Build the app:
+
+```bash
+npm run build
+```
+
+5. Start the production server:
+
+```bash
+npm run start
+```
+
+For hosting options such as Vercel, Railway, Render, or a containerized deployment, add the same environment variables in the platform configuration.
+
+## Future enhancements
+
+- Real integration with Jira, GitHub, GitLab, and CI/CD systems
+- Alerting and service health thresholds
+- Role-based access controls and RBAC
+- Advanced filtering, saved views, and exports
+- Query optimization and caching for large-scale telemetry
+- Support for multi-environment and multi-team analytics
+
+## Notes
+
+This project intentionally uses a light professional UI and avoids dark-mode-only styling. The current data layer is mock-backed for local demo and validation purposes, while preserving a structure that can evolve into live data integrations without redesigning the app.

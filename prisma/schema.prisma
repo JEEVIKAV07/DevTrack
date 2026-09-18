@@ -1,0 +1,137 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  ADMIN
+  MANAGER
+  ENGINEER
+  VIEWER
+}
+
+enum DeploymentStatus {
+  SUCCESS
+  FAILED
+  IN_PROGRESS
+  ROLLED_BACK
+  PENDING
+}
+
+enum TicketStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+}
+
+enum TicketPriority {
+  CRITICAL
+  HIGH
+  MEDIUM
+  LOW
+}
+
+enum HealthStatus {
+  HEALTHY
+  WARNING
+  CRITICAL
+  UNKNOWN
+}
+
+model User {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  name         String
+  passwordHash String
+  role         UserRole  @default(ENGINEER)
+  department   String?
+  avatarUrl    String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@map("users")
+}
+
+model Deployment {
+  id          String           @id @default(cuid())
+  application String
+  version     String
+  environment String
+  developer   String
+  deployedAt  DateTime         @default(now())
+  duration    Int              // seconds
+  status      DeploymentStatus
+  commitHash  String?
+  notes       String?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  @@map("deployments")
+  @@index([deployedAt])
+  @@index([status])
+  @@index([environment])
+  @@index([application])
+}
+
+model Ticket {
+  id          String         @id @default(cuid())
+  title       String
+  description String?
+  team        String
+  priority    TicketPriority
+  status      TicketStatus   @default(OPEN)
+  assignee    String
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  @@map("tickets")
+  @@index([status])
+  @@index([priority])
+  @@index([team])
+  @@index([createdAt])
+}
+
+model Environment {
+  id           String       @id @default(cuid())
+  name         String       @unique
+  status       HealthStatus @default(HEALTHY)
+  cpu          Float        // percentage 0-100
+  memory       Float        // percentage 0-100
+  disk         Float        // percentage 0-100
+  responseTime Int          // milliseconds
+  uptime       Float        // percentage 0-100
+  lastChecked  DateTime     @default(now())
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  @@map("environments")
+}
+
+model EngineeringActivity {
+  id             String   @id @default(cuid())
+  developer      String
+  team           String
+  commits        Int      @default(0)
+  pullRequests   Int      @default(0)
+  codeReviews    Int      @default(0)
+  deployments    Int      @default(0)
+  issuesCreated  Int      @default(0)
+  issuesResolved Int      @default(0)
+  period         String   // e.g., "2024-01" (YYYY-MM)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@map("engineering_activities")
+  @@index([developer])
+  @@index([team])
+  @@index([period])
+  @@unique([developer, period])
+}
