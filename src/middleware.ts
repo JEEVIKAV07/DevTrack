@@ -10,6 +10,8 @@ const PROTECTED_PREFIXES = [
   "/activity",
   "/reports",
   "/settings",
+  "/teams",
+  "/incidents",
 ];
 
 export default auth((req) => {
