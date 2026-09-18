@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Activity, ArrowUpRight, GitBranch, Users } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { EmptyState, ErrorState } from "@/components/ui/EmptyState";
@@ -50,8 +50,7 @@ export default function ActivityPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  useEffect(() => {
-    async function fetchData() {
+  const fetchData = useCallback(async () => {
       setLoading(true);
       setError("");
       try {
@@ -66,21 +65,24 @@ export default function ActivityPage() {
       } finally {
         setLoading(false);
       }
-    }
-
-    fetchData();
   }, [range]);
+
+  useEffect(() => {
+    const initial = window.setTimeout(() => void fetchData(), 0);
+    const timer = window.setInterval(() => void fetchData(), 30000);
+    return () => { window.clearTimeout(initial); window.clearInterval(timer); };
+  }, [fetchData]);
 
   if (error) {
     return (
-      <AppShell title="Activity" subtitle="Developer output and delivery trends across the engineering organization.">
+      <AppShell title="Activity" subtitle="Developer output and delivery trends across the engineering organization." onRefresh={fetchData} isRefreshing={loading}>
         <ErrorState title="Activity data unavailable" description={error} onRetry={() => window.location.reload()} />
       </AppShell>
     );
   }
 
   return (
-    <AppShell title="Activity" subtitle="Developer output and delivery trends across the engineering organization.">
+    <AppShell title="Activity" subtitle="Developer output and delivery trends across the engineering organization." onRefresh={fetchData} isRefreshing={loading}>
       <div className="space-y-6">
         <div className="flex flex-wrap gap-2">
           {RANGE_OPTIONS.map((item) => (

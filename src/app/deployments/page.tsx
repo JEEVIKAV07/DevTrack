@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { ArrowRight, CheckCircle2, Clock3, Gauge, Rocket } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { StatusBadge } from "@/components/ui/StatusBadge";
@@ -62,8 +62,7 @@ export default function DeploymentsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  useEffect(() => {
-    async function fetchData() {
+  const fetchData = useCallback(async () => {
       setLoading(true);
       setError("");
       try {
@@ -78,21 +77,24 @@ export default function DeploymentsPage() {
       } finally {
         setLoading(false);
       }
-    }
-
-    fetchData();
   }, [range]);
+
+  useEffect(() => {
+    const initial = window.setTimeout(() => void fetchData(), 0);
+    const timer = window.setInterval(() => void fetchData(), 30000);
+    return () => { window.clearTimeout(initial); window.clearInterval(timer); };
+  }, [fetchData]);
 
   if (error) {
     return (
-      <AppShell title="Deployments" subtitle="Release health and delivery outcomes across environments.">
+      <AppShell title="Deployments" subtitle="Release health and delivery outcomes across environments." onRefresh={fetchData} isRefreshing={loading}>
         <ErrorState title="Deployment data unavailable" description={error} onRetry={() => window.location.reload()} />
       </AppShell>
     );
   }
 
   return (
-    <AppShell title="Deployments" subtitle="Release health and delivery outcomes across environments.">
+    <AppShell title="Deployments" subtitle="Release health and delivery outcomes across environments." onRefresh={fetchData} isRefreshing={loading}>
       <div className="space-y-6">
         <div className="flex flex-wrap gap-2">
           {RANGE_OPTIONS.map((item) => (

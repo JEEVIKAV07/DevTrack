@@ -16,9 +16,13 @@ This project creates a secure, internal-facing engineering productivity dashboar
 - Ticket backlog and status monitoring
 - Environment health visibility with charts and health badges
 - Engineering activity metrics by contributor and team
+- Team delivery health with contributor and workload rollups
+- Live incident queue combining critical tickets and environment alerts
+- Backend-powered workspace settings and integration status
 - CSV report export for stakeholder updates
 - Desktop and mobile responsive layout
 - Loading, empty, and retry states for API-backed views
+- Automatic polling and manual refresh controls across operational pages
 - Mock API layer designed for easy real-service replacement
 
 ## Screenshots
@@ -51,7 +55,7 @@ Next.js App Router frontend
     ↓
 Protected route + auth layer
     ↓
-API route handlers (dashboard, deployments, tickets, environments, activity, reports)
+API route handlers (dashboard, deployments, tickets, environments, activity, reports, teams, incidents, settings)
     ↓
 Mock data services / future production service adapters
     ↓
@@ -113,8 +117,22 @@ The app exposes these route handlers:
 - GET /api/environments
 - GET /api/activity
 - GET /api/reports
+- GET /api/teams
+- GET /api/incidents
+- GET /api/settings
 
 Each route validates the session and returns normalized JSON payloads for the client views.
+
+## Live refresh behavior
+
+Operational pages use authenticated `fetch` calls with `cache: "no-store"` and poll their backend routes while open:
+
+- Dashboard and deployments: every 30 seconds
+- Tickets, activity, and teams: every 30 seconds
+- Environments and incidents: every 15 seconds
+- Reports and settings: every 60 seconds
+
+Every polling page also exposes a manual refresh control in the shared header. The current implementation uses resilient mock services behind the API boundary, so replacing those services with vendor integrations does not require changing the page contracts.
 
 ## Mock API explanation
 

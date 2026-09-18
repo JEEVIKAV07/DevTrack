@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Download, FileText, TrendingUp } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { ErrorState } from "@/components/ui/EmptyState";
@@ -45,8 +45,7 @@ export default function ReportsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  useEffect(() => {
-    async function fetchData() {
+  const fetchData = useCallback(async () => {
       setLoading(true);
       setError("");
       try {
@@ -61,10 +60,13 @@ export default function ReportsPage() {
       } finally {
         setLoading(false);
       }
-    }
-
-    fetchData();
   }, [range]);
+
+  useEffect(() => {
+    const initial = window.setTimeout(() => void fetchData(), 0);
+    const timer = window.setInterval(() => void fetchData(), 60000);
+    return () => { window.clearTimeout(initial); window.clearInterval(timer); };
+  }, [fetchData]);
 
   async function exportCsv() {
     const res = await fetch(`/api/reports?range=${range}&format=csv`, { cache: "no-store" });
@@ -79,14 +81,14 @@ export default function ReportsPage() {
 
   if (error) {
     return (
-      <AppShell title="Reports" subtitle="Operational exports and summary reporting for engineering stakeholders.">
+      <AppShell title="Reports" subtitle="Operational exports and summary reporting for engineering stakeholders." onRefresh={fetchData} isRefreshing={loading}>
         <ErrorState title="Report data unavailable" description={error} onRetry={() => window.location.reload()} />
       </AppShell>
     );
   }
 
   return (
-    <AppShell title="Reports" subtitle="Operational exports and summary reporting for engineering stakeholders.">
+    <AppShell title="Reports" subtitle="Operational exports and summary reporting for engineering stakeholders." onRefresh={fetchData} isRefreshing={loading}>
       <div className="space-y-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex flex-wrap gap-2">

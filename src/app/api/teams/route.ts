@@ -9,7 +9,7 @@ export async function GET(request: NextRequest) {
 
   const range = (new URL(request.url).searchParams.get("range") ?? "30d") as DateRange;
   try {
-    const { activities, total } = await getMockActivity(range, undefined, 1, 1000);
+    const { activities, total } = await getMockActivity(range);
     const teams = new Map<string, { team: string; contributors: Set<string>; commits: number; pullRequests: number; reviews: number; deployments: number; issuesResolved: number }>();
 
     activities.forEach((activity) => {

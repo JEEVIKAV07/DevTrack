@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { AlertTriangle, CheckCheck, Clock3, Ticket } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { StatusBadge } from "@/components/ui/StatusBadge";
@@ -51,8 +51,7 @@ export default function TicketsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  useEffect(() => {
-    async function fetchData() {
+  const fetchData = useCallback(async () => {
       setLoading(true);
       setError("");
       try {
@@ -67,21 +66,24 @@ export default function TicketsPage() {
       } finally {
         setLoading(false);
       }
-    }
-
-    fetchData();
   }, [range]);
+
+  useEffect(() => {
+    const initial = window.setTimeout(() => void fetchData(), 0);
+    const timer = window.setInterval(() => void fetchData(), 30000);
+    return () => { window.clearTimeout(initial); window.clearInterval(timer); };
+  }, [fetchData]);
 
   if (error) {
     return (
-      <AppShell title="Tickets" subtitle="Current operational issues, priorities, and resolution workload.">
+      <AppShell title="Tickets" subtitle="Current operational issues, priorities, and resolution workload." onRefresh={fetchData} isRefreshing={loading}>
         <ErrorState title="Ticket data unavailable" description={error} onRetry={() => window.location.reload()} />
       </AppShell>
     );
   }
 
   return (
-    <AppShell title="Tickets" subtitle="Current operational issues, priorities, and resolution workload.">
+    <AppShell title="Tickets" subtitle="Current operational issues, priorities, and resolution workload." onRefresh={fetchData} isRefreshing={loading}>
       <div className="space-y-6">
         <div className="flex flex-wrap gap-2">
           {RANGE_OPTIONS.map((item) => (

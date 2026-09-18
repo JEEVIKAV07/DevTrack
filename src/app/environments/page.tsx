@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Activity, Gauge, ServerCog } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { EnvironmentHealthChart } from "@/components/charts/Charts";
@@ -36,8 +36,7 @@ export default function EnvironmentsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  useEffect(() => {
-    async function fetchData() {
+  const fetchData = useCallback(async () => {
       setLoading(true);
       setError("");
       try {
@@ -52,21 +51,24 @@ export default function EnvironmentsPage() {
       } finally {
         setLoading(false);
       }
-    }
-
-    fetchData();
   }, []);
+
+  useEffect(() => {
+    const initial = window.setTimeout(() => void fetchData(), 0);
+    const timer = window.setInterval(() => void fetchData(), 15000);
+    return () => { window.clearTimeout(initial); window.clearInterval(timer); };
+  }, [fetchData]);
 
   if (error) {
     return (
-      <AppShell title="Environments" subtitle="Infrastructure health and performance across the release chain.">
+      <AppShell title="Environments" subtitle="Infrastructure health and performance across the release chain." onRefresh={fetchData} isRefreshing={loading}>
         <ErrorState title="Environment data unavailable" description={error} onRetry={() => window.location.reload()} />
       </AppShell>
     );
   }
 
   return (
-    <AppShell title="Environments" subtitle="Infrastructure health and performance across the release chain.">
+    <AppShell title="Environments" subtitle="Infrastructure health and performance across the release chain." onRefresh={fetchData} isRefreshing={loading}>
       <div className="space-y-6">
         {loading ? (
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
