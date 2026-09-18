@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
 import {
   LayoutDashboard, Rocket, Ticket, Server, Activity,
-  FileText, Settings, LogOut, X, Menu, Zap,
+  FileText, Users, Siren, Settings, LogOut, X, Menu, Zap,
 } from "lucide-react";
 
 const NAV_ITEMS = [
@@ -16,6 +16,8 @@ const NAV_ITEMS = [
   { href: "/environments", label: "Environments", icon: Server },
   { href: "/activity", label: "Activity", icon: Activity },
   { href: "/reports", label: "Reports", icon: FileText },
+  { href: "/teams", label: "Teams", icon: Users },
+  { href: "/incidents", label: "Incidents", icon: Siren },
 ];
 
 export function MobileNav() {

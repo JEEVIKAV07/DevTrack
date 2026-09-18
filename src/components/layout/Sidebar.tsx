@@ -10,6 +10,8 @@ import {
   Server,
   Activity,
   FileText,
+  Users,
+  Siren,
   Settings,
   LogOut,
   ChevronLeft,
@@ -24,6 +26,8 @@ const NAV_ITEMS = [
   { href: "/environments", label: "Environments", icon: Server },
   { href: "/activity", label: "Activity", icon: Activity },
   { href: "/reports", label: "Reports", icon: FileText },
+  { href: "/teams", label: "Teams", icon: Users },
+  { href: "/incidents", label: "Incidents", icon: Siren },
 ];
 
 interface SidebarProps {
