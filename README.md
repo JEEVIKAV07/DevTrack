@@ -25,14 +25,6 @@ This project creates a secure, internal-facing engineering productivity dashboar
 - Automatic polling and manual refresh controls across operational pages
 - Mock API layer designed for easy real-service replacement
 
-## Screenshots
-
-![Dashboard Overview](https://placehold.co/1200x700/eff6ff/1e3a8a?text=Dashboard+Overview)
-
-![Deployment Monitoring](https://placehold.co/1200x700/f8fafc/334155?text=Deployment+Monitoring)
-
-![Ticket Operations](https://placehold.co/1200x700/f8fafc/334155?text=Ticket+Operations)
-
 ## Tech stack
 
 - Next.js 16
